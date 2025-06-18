@@ -1,13 +1,11 @@
 import os
 import threading
 import customtkinter as ctk
-from PIL import Image, ImageTk
 import requests
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TDRC
-import yt_dlp
 
 SPOTIPY_CLIENT_ID = 'YOUR_CLIENT_ID'
 SPOTIPY_CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
@@ -71,7 +69,7 @@ class App(ctk.CTk):
             
     def log_status(self, message):
         self.status_textbox.configure(state="normal")
-        self.status_textbox.insert("end", message + "\n")
+        self.status_textbox.insert("end", str(message) + "\n")
         self.status_textbox.configure(state="disabled")
         self.status_textbox.see("end")
 
@@ -81,6 +79,8 @@ class App(ctk.CTk):
         download_thread.start()
 
     def download_playlist(self):
+        import yt_dlp 
+        
         playlist_url = self.url_entry.get()
         if not playlist_url:
             self.log_status("Error: Please paste a playlist URL.")
@@ -96,7 +96,7 @@ class App(ctk.CTk):
             self.log_status("Fetching playlist information...")
             results = self.sp.playlist_tracks(playlist_url)
             tracks = results['items']
-
+            
             while results['next']:
                 results = self.sp.next(results)
                 tracks.extend(results['items'])
@@ -140,7 +140,6 @@ class App(ctk.CTk):
                         ydl.download([f"ytsearch1:{search_query}"])
                     
                     self.log_status(f"-> Downloaded: {track_name}")
-
                     self.log_status(f"   -> Embedding metadata...")
                     self.embed_metadata(filename, track_name, artist_name, album_name, release_date, image_url)
                     self.log_status(f"   -> Done!")
