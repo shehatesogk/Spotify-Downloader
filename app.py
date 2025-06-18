@@ -1,10 +1,10 @@
 import os
+import sys
 import threading
 import json
 import re
 import glob
 import subprocess
-import sys
 import tkinter.messagebox
 import customtkinter as ctk
 from customtkinter import filedialog
@@ -15,11 +15,23 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TDRC, TRCK, TPOS
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.CONFIG_FILE = "config.json"
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+            self.CONFIG_FILE = os.path.join(application_path, "config.json")
+        else:
+            self.CONFIG_FILE = "config.json"
+            
         self.download_path = ctk.StringVar(value="downloads")
         self.quality_var = ctk.StringVar(value="320")
         self.theme_var = ctk.StringVar(value="dark")
@@ -38,7 +50,7 @@ class App(ctk.CTk):
         self.load_settings()
         
         self.title("Spotify Downloader")
-        self.iconbitmap("icon.ico")
+        self.iconbitmap(resource_path("icon.ico"))
         self.geometry("800x650")
         ctk.set_appearance_mode(self.theme_var.get())
 
@@ -327,7 +339,7 @@ class App(ctk.CTk):
                         result = future.result()
                         if result['status'] == 'success':
                             self.successful_downloads.append(result['name'])
-                        else:
+                        elif result['status'] == 'failure':
                             self.failed_downloads.append(result['data'])
                     except Exception as exc:
                         self.log_status(f"A task generated an exception: {exc}")
