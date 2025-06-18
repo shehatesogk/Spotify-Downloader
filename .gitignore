@@ -1,1 +1,16 @@
+__pycache__/
+*.pyc
+
+venv/
+.venv/
+env/
+.env
+
+.cache
+
 config.json
+downloads/
+
+build/
+dist/
+*.spec
